@@ -1,32 +1,25 @@
-document.lastScrollPosition = 0;
-document.lastCentered = 0;
-document.onWayTo = null;
+let isScrolling;
+window.addEventListener('scroll', function (e) {
+    window.clearTimeout(isScrolling);
 
-document.addEventListener('scroll', () => {
-  const direction = window.pageYOffset - document.lastScrollPosition > 0 ? 'down' : 'up';
-  const sections = [...document.querySelectorAll('section')];
+    isScrolling = setTimeout(function() {
+        const sections = document.querySelectorAll('section');
+        let closestSection = null;
+        let minOffset = Number.MAX_VALUE;
 
-  if (document.onWayTo === null) {
-    const destIndex = direction === 'up' ? document.lastCentered - 1 : document.lastCentered + 1;
-    if (destIndex >= 0 && destIndex < sections.length) {
-      console.log({destIndex,direction});
-      document.onWayTo = destIndex;
-      window.scroll(0, sections[destIndex].offsetTop);
-    }
-  }
+        sections.forEach((section) => {
+            const offset = Math.abs(section.offsetTop - window.pageYOffset);
+            if (offset < minOffset) {
+                minOffset = offset;
+                closestSection = section;
+            }
+        });
 
-
-  sections.forEach((section,index) => {
-    if (window.pageYOffset === section.offsetTop) {
-      document.lastCentered = index;
-      section.className = 'active';
-      if (document.onWayTo === index) {
-        document.onWayTo = null;
-      }
-    } else {
-      section.className = '';
-    }
-  })
-
-  document.lastScrollPosition = window.pageYOffset;
-})
+        if(closestSection) {
+            window.scrollTo({
+                top: closestSection.offsetTop,
+                behavior: 'smooth'
+            });
+        }
+    }, 66); // Adjust the timeout as needed for performance
+}, false);
